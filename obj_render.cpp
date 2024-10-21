@@ -3,28 +3,141 @@
 #include "bresenham_and_bezzier.cpp"
 #include <fstream>
 
-pair<vector<Vector4>,vector<Vector4>> obj_vector_and_triangles(string name_document){
+/**
+ * @brief genera un par con dos vectores de coordenas, first:representa a los vertices second:representa a los indices;
+ * @param name_document string que contiene el nombre del obj a renderizar 
+ * @return par con dos vectores de Vector4
+ */
+pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_document){
 
     std::ifstream obj(name_document);
     string renglon;
 
     if(!obj.is_open())
-    cout<<"error al abrir el archivo"<<"\n";
+    std::cout<<"error al abrir el archivo"<<"\n";
+    //variable para guardar indices
+    int aux_index = 0;
+    //coordenadas de los vectores
+    double x,y,z,w; 
+    //vector a agregar
+    Vector4 agregado;
+    //vector de puntos
+    vector<Vector4> points;
+    //vector de indices
+    vector<Vector4> indexes;
+    //string auxiliar
+    string txt_storage;
 
     while(!obj.eof()){
+        
+
         std::getline(obj,renglon);
+
+        if(renglon == "")
+        continue;
+
         if(renglon[0] == 'v'){
-            
+        
+
+            renglon.erase(0,2);
+            //x
+            aux_index = renglon.find(" ");
+
+            x = stod(renglon.substr(0,aux_index));
+
+            renglon.erase(0,aux_index+1);
+
+            //y
+            aux_index = renglon.find(" ");
+
+            y = stod(renglon.substr(0,aux_index));
+
+            renglon.erase(0,aux_index+1);
+
+            //z
+            aux_index = renglon.find(" ");
+
+            z = stod(renglon.substr(0,aux_index));
+
+            agregado.set(x,y,z,1);
+
+            points.push_back(agregado);
+
         }
 
-        //cout<<renglon<<"\n";
+        if(renglon[0] == 'f'){
+            renglon.erase(0,2);
+            w = -1;
+
+            //x
+            aux_index = renglon.find(" ");
+
+            txt_storage = renglon.substr(0,aux_index+1);
+
+            x = stod(txt_storage.substr(0,txt_storage.find("/")-1));
+
+            renglon.erase(0,aux_index+1);
+
+            //y
+            aux_index = renglon.find(" ");
+
+            txt_storage = renglon.substr(0,aux_index+1);
+
+            y = stod(txt_storage.substr(0,txt_storage.find("/")-1));
+
+            renglon.erase(0,aux_index+1);
+
+            //z
+            
+
+            if(renglon.find(" ") == -1){
+                z = stod(renglon);
+                agregado.set(x,y,z,w);
+
+                indexes.push_back(agregado);
+                continue;
+            }else{
+
+                aux_index = renglon.find(" ");
+
+                txt_storage = renglon.substr(0,aux_index+1);
+
+                z = stod(txt_storage.substr(0,txt_storage.find("/")-1));
+
+                renglon.erase(0,aux_index+1);
+
+            }
+
+            
+
+            //w
+
+            if(renglon.find("/") == -1){
+
+                w = stod(renglon);
+
+            }else{
+
+                w = stod(renglon.substr(0,renglon.find("/")-1));
+
+            }           
+
+            agregado.set(x,y,z,w);
+
+            indexes.push_back(agregado);
+
+        }
+
+        std::cout<<renglon<<"\n";
     }
 
-    pair<vector<int>,vector<int>> result;
+    pair<vector<Vector4>,vector<Vector4>> result;
 
 
     return result;
 }
+
+
 
 
 
@@ -35,6 +148,8 @@ int main()
     int wide = 720;
 
     string name_document = "Cube_Triangles.obj";
+
+    pair<vector<Vector4>,vector<Vector4>> modelo = obj_vectores_y_triangulos(name_document);
 
 
 
