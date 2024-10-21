@@ -164,6 +164,8 @@ public:
 
         Vector3 normalized_vector = Vector3(x_coor,y_coor,z_coor);
 
+        return normalized_vector;
+
     }
 
     /** 
@@ -1344,7 +1346,7 @@ public:
 };
 
 
-/*Aqui empiezan las pruebas
+/*/Aqui empiezan las pruebas
 int main() {
     // Pruebas para Vector3
     cout << "Pruebas para Vector3:" << endl;

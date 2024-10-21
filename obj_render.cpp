@@ -1,18 +1,26 @@
 #include <SFML/Graphics.hpp>
-#include <utility>
 #include <iostream>
-#include "math.cpp"
 #include "bresenham_and_bezzier.cpp"
 #include <fstream>
 
-pair<vector<Vector4>,vector<Vector4>> obj_vector_and_triangles(std::ifstream obj){
-    string texto;
-    if(obj.is_open()){
-        obj >> texto;
-        cout<<texto;
+pair<vector<Vector4>,vector<Vector4>> obj_vector_and_triangles(string name_document){
+
+    std::ifstream obj(name_document);
+    string renglon;
+
+    if(!obj.is_open())
+    cout<<"error al abrir el archivo"<<"\n";
+
+    while(!obj.eof()){
+        std::getline(obj,renglon);
+        if(renglon[0] == 'v'){
+            
+        }
+
+        //cout<<renglon<<"\n";
     }
 
-    pair<vector<Vector4>,vector<Vector4>> result;
+    pair<vector<int>,vector<int>> result;
 
 
     return result;
@@ -26,9 +34,7 @@ int main()
     int height = 720;
     int wide = 720;
 
-    std::ifstream obj;
-
-    obj.open("Cube_triangle.obj");
+    string name_document = "Cube_Triangles.obj";
 
 
 
