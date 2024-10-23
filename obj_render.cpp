@@ -133,8 +133,33 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
 
     pair<vector<Vector4>,vector<Vector4>> result;
 
+    result.first = points;
+    result.second = indexes;
+
 
     return result;
+}
+
+Matrix4 Create_final_matrix(Matrix4 viewport,Matrix4 perspective, Matrix4 lookAt){
+    Matrix4 pivot = Matrix4::multiply(perspective,lookAt);
+    Matrix4 final_matrix = Matrix4::multiply(viewport,pivot);
+
+    return final_matrix;
+}
+
+vector<Vector4> Aplicar_Matriz(vector<Vector4> points,Matrix4 matrix)
+{   
+    Vector4 added = Vector4();
+    vector<Vector4> vectors_multipied;
+
+    for(Vector4 point: points){
+
+        added = matrix.multiplyVector(point);
+        vectors_multipied.push_back(added);
+
+    }
+
+    return vectors_multipied;
 }
 
 
@@ -209,18 +234,18 @@ int main()
             //put_pixxel(aux.x,aux.y,window);
         }
 
-        draw_line(puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,window,sf::Color::Blue);
-        draw_line(puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,window,sf::Color::Blue);
+        draw_line(puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,window,sf::Color::Yellow);
+        draw_line(puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,window,sf::Color::Yellow);
 
         theta = theta + 0.1;
 
