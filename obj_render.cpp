@@ -37,7 +37,8 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
         continue;
 
         if(renglon[0] == 'v'){
-        
+            if(renglon[1] == 'n')
+            continue;
 
             renglon.erase(0,2);
             //x
@@ -74,7 +75,9 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
 
             txt_storage = renglon.substr(0,aux_index+1);
 
-            x = stod(txt_storage.substr(0,txt_storage.find("/")-1));
+            cout<<txt_storage.substr(0,txt_storage.find("/"))<<"\n";
+
+            x = stod(txt_storage.substr(0,txt_storage.find("/")));
 
             renglon.erase(0,aux_index+1);
 
@@ -83,7 +86,7 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
 
             txt_storage = renglon.substr(0,aux_index+1);
 
-            y = stod(txt_storage.substr(0,txt_storage.find("/")-1));
+            y = stod(txt_storage.substr(0,txt_storage.find("/")));
 
             renglon.erase(0,aux_index+1);
 
@@ -91,7 +94,9 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
             
 
             if(renglon.find(" ") == -1){
-                z = stod(renglon);
+                cout<<renglon.substr(0,renglon.find("/"))<<"\n";
+
+                z = stod(renglon.substr(0,renglon.find("/")));
                 agregado.set(x,y,z,w);
 
                 indexes.push_back(agregado);
@@ -108,7 +113,7 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
 
             }
 
-            
+            cout<<"mal"<<"\n";
 
             //w
 
@@ -147,7 +152,7 @@ Matrix4 Create_final_matrix(Matrix4 viewport,Matrix4 perspective, Matrix4 lookAt
     return final_matrix;
 }
 
-vector<Vector4> Aplicar_Matriz(vector<Vector4> points,Matrix4 matrix)
+vector<Vector4> aply_matrix(vector<Vector4> points,Matrix4 matrix)
 {   
     Vector4 added = Vector4();
     vector<Vector4> vectors_multipied;
@@ -162,8 +167,88 @@ vector<Vector4> Aplicar_Matriz(vector<Vector4> points,Matrix4 matrix)
     return vectors_multipied;
 }
 
+Vector3 get_center_of_model(vector<Vector4> points){
+
+    Vector3 center;
+
+    double center_x = 0;
+
+    double center_y = 0;
+
+    double center_z = 0;
 
 
+    for(Vector4 point:points){
+
+        center_x += point.x;
+        center_y += point.y;
+        center_z += point.z;
+
+    }
+
+    center_x = center_x/points.size();
+    center_y = center_y/points.size();
+    center_z = center_z/points.size();
+
+    center.set(center_x,center_y,center_z);
+
+    return center;
+}
+
+
+vector<double> get_model_cage(vector<Vector4> points){
+    double min_x;
+    double min_y;
+    double min_z;
+    double max_x;
+    double max_y;
+    double max_z;
+
+    min_x = points[0].x;
+    min_y = points[0].y;
+    min_z = points[0].z;
+    max_x = points[0].x;
+    max_y = points[0].y;
+    max_z = points[0].z;
+
+    for(Vector4 point : points){
+
+        if(point.x<min_x)
+        min_x = point.x;
+
+        if(point.y<min_y)
+        min_y = point.y;
+
+        if(point.z<min_z)
+        min_z = point.z;
+
+        if(max_x<point.x)
+        max_x = point.x;
+
+        if(max_y<point.y)
+        max_y = point.y;
+
+        if(max_z<point.z)
+        max_z = point.z;
+
+    }
+
+    vector<double> cage;
+    cage.push_back(min_x);
+    cage.push_back(max_x);
+
+    cage.push_back(min_y);
+    cage.push_back(max_y);
+
+    cage.push_back(min_z);
+    cage.push_back(max_z);
+
+    return cage;
+}
+
+void paint_vector(Vector4 vec, sf::RenderWindow window){
+    put_pixxel(vec.x,vec.y,window);
+}
 
 
 int main()
@@ -172,18 +257,33 @@ int main()
     int height = 720;
     int wide = 720;
 
-    string name_document = "Cube_Triangles.obj";
+    string name_document = "bunny.obj";
 
-    pair<vector<Vector4>,vector<Vector4>> modelo = obj_vectores_y_triangulos(name_document);
+    pair<vector<Vector4>,vector<Vector4>> model = obj_vectores_y_triangulos(name_document);
 
+    vector<double> model_cage = get_model_cage(model.first);
 
+    Vector3 center = get_center_of_model(model.first);
+
+    Vector3 camera = Vector3(20,5,5);
+
+    Matrix4 look_at = Matrix4::lookAt(center,camera,Vector3(0,0,1));
+
+    Vector3 min = Vector3(model_cage[0],model_cage[2],model_cage[4]);
+
+    double model_distance = Vector3::distance(Vector3::subtract(camera,min),Vector3()) * 1.5;
+
+    Matrix4 perspective = Matrix4::perspective(100,1,1,30);
+
+    Matrix4 view_port = Matrix4::viewPort(720,720);
+
+    Matrix4 final_Matrix = Create_final_matrix(view_port,perspective,look_at);
 
     sf::RenderWindow window(sf::VideoMode(height,wide),"obj_render",sf::Style::Default);
     window.setFramerateLimit(30);
 
     double theta = 0; 
     bool click = false;
-    Vector3 camera = Vector3(10,10,5);
 
     while(window.isOpen())
     { 
@@ -200,52 +300,15 @@ int main()
 
         window.clear();
 
-        std::vector <Vector4> puntos;
-
-        puntos.push_back(Vector4(1,1,1,1));
-        puntos.push_back(Vector4(1,1,-1,1));
-        puntos.push_back(Vector4(1,-1,-1,1));
-        puntos.push_back(Vector4(-1,-1,-1,1));
-        puntos.push_back(Vector4(-1,1,1,1));
-        puntos.push_back(Vector4(-1,1,-1,1));
-        puntos.push_back(Vector4(-1,-1,1,1));
-        puntos.push_back(Vector4(1,-1,1,1));
-
         Matrix4 RotationMatrix = Matrix4::rotateZ(theta);
 
-        for(int i=0; i<8;i++){
-            puntos[i] = RotationMatrix.multiplyVector(puntos[i]);
+        vector<Vector4> transformed_points = aply_matrix(model.first,RotationMatrix);
+
+        vector<Vector4> transformed_points2 = aply_matrix(transformed_points,final_Matrix);
+
+        for(Vector4 point : transformed_points2){
+            put_pixxel(point.x,point.y,window);
         }
-        //Matrix4::orthographic(-2,2,-3,3,2,8)
-        //Matrix4::Matrix4::lookAt(camera,Vector3(),Vector3(0,0,1))
-
-        Matrix4 Matriz_perspective_look = Matrix4::multiply(Matrix4::perspective(90,1,2,25),Matrix4::lookAt(camera,Vector3(),Vector3(0,0,1)));
-
-        Matrix4 final_tranformation = Matrix4::multiply(Matrix4::viewPort(720,720),Matriz_perspective_look);
-
-        window.clear();
-
-        Vector4 aux = Vector4();
-        std::vector <Vector4> puntos_camara;
-
-        for(Vector4 e : puntos){
-            aux = final_tranformation.multiplyVector(e);
-            puntos_camara.push_back(aux);
-            //put_pixxel(aux.x,aux.y,window);
-        }
-
-        draw_line(puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[7].x/puntos_camara[7].w,puntos_camara[7].y/puntos_camara[7].w,puntos_camara[0].x/puntos_camara[0].w,puntos_camara[0].y/puntos_camara[0].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[2].x/puntos_camara[2].w,puntos_camara[2].y/puntos_camara[2].w,puntos_camara[1].x/puntos_camara[1].w,puntos_camara[1].y/puntos_camara[1].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[3].x/puntos_camara[3].w,puntos_camara[3].y/puntos_camara[3].w,puntos_camara[5].x/puntos_camara[5].w,puntos_camara[5].y/puntos_camara[5].w,window,sf::Color::Yellow);
-        draw_line(puntos_camara[6].x/puntos_camara[6].w,puntos_camara[6].y/puntos_camara[6].w,puntos_camara[4].x/puntos_camara[4].w,puntos_camara[4].y/puntos_camara[4].w,window,sf::Color::Yellow);
 
         theta = theta + 0.1;
 
