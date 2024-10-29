@@ -75,7 +75,7 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
 
             txt_storage = renglon.substr(0,aux_index+1);
 
-            cout<<txt_storage.substr(0,txt_storage.find("/"))<<"\n";
+            //cout<<txt_storage.substr(0,txt_storage.find("/"))<<"\n";
 
             x = stod(txt_storage.substr(0,txt_storage.find("/")));
 
@@ -94,7 +94,7 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
             
 
             if(renglon.find(" ") == -1){
-                cout<<renglon.substr(0,renglon.find("/"))<<"\n";
+                //cout<<renglon.substr(0,renglon.find("/"))<<"\n";
 
                 z = stod(renglon.substr(0,renglon.find("/")));
                 agregado.set(x,y,z,w);
@@ -133,7 +133,7 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
 
         }
 
-        std::cout<<renglon<<"\n";
+        //std::cout<<renglon<<"\n";
     }
 
     pair<vector<Vector4>,vector<Vector4>> result;
@@ -263,27 +263,18 @@ int main()
 
     vector<double> model_cage = get_model_cage(model.first);
 
-    Vector3 center = get_center_of_model(model.first);
+    Vector3 center = Vector3((model_cage[0]+model_cage[1])/2.0,(model_cage[2]+model_cage[3])/2.0,(model_cage[4]+model_cage[5])/2.0);
 
-    Vector3 camera = Vector3(20,5,5);
-
-    Matrix4 look_at = Matrix4::lookAt(center,camera,Vector3(0,0,1));
+    Vector3 camera = Vector3(10.0,30.0,10.0);
 
     Vector3 min = Vector3(model_cage[0],model_cage[2],model_cage[4]);
 
     double model_distance = Vector3::distance(Vector3::subtract(camera,min),Vector3()) * 1.5;
 
-    Matrix4 perspective = Matrix4::perspective(100,1,1,30);
-
-    Matrix4 view_port = Matrix4::viewPort(720,720);
-
-    Matrix4 final_Matrix = Create_final_matrix(view_port,perspective,look_at);
-
     sf::RenderWindow window(sf::VideoMode(height,wide),"obj_render",sf::Style::Default);
     window.setFramerateLimit(30);
 
-    double theta = 0; 
-    bool click = false;
+    double theta = 0;
 
     while(window.isOpen())
     { 
@@ -291,20 +282,28 @@ int main()
         sf::Event event;
         while (window.pollEvent(event)){
             if(event.type == sf::Event::EventType::MouseButtonPressed){
-                camera = Vector3(camera.x-1,camera.y-1,camera.y-0.5);
+                camera = Vector3(camera.x-1.0,camera.y-1.0,camera.z-1.0);
             }
 
             if (event.type == sf::Event::Closed)
                 window.close();
         }
 
+        Matrix4 look_at = Matrix4::lookAt(camera,center,Vector3(0.0,0.0,1.0));
+
+        Matrix4 perspective = Matrix4::perspective(90.0,1.0,0.1,100.0);
+
+        Matrix4 view_port = Matrix4::viewPort(720,720);
+
+        Matrix4 final_Matrix = Create_final_matrix(view_port,perspective,look_at);
+
         window.clear();
 
-        Matrix4 RotationMatrix = Matrix4::rotateZ(theta);
+        //Matrix4 RotationMatrix = Matrix4::rotateZ(theta);
 
-        vector<Vector4> transformed_points = aply_matrix(model.first,RotationMatrix);
+        //vector<Vector4> transformed_points = aply_matrix(model.first,RotationMatrix);
 
-        vector<Vector4> transformed_points2 = aply_matrix(transformed_points,final_Matrix);
+        vector<Vector4> transformed_points2 = aply_matrix(model.first,final_Matrix);
 
         for(Vector4 point : transformed_points2){
             put_pixxel(point.x,point.y,window);
