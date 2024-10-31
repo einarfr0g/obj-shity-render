@@ -1162,7 +1162,7 @@ public:
      * @param height alto de la resolucion
      * @return Matrix4 Matriz 4x4 viewPort
      */
-    static Matrix4 viewPort(int wide,double height){
+    static Matrix4 viewPort(double wide,double height){
             Matrix4 mat = Matrix4(
             wide/2.0,0.0,0.0,wide/2.0,
             0.0,height/2.0,0.0,height/2.0,
@@ -1191,24 +1191,19 @@ public:
 
         Vector3 u = Vector3::cross(w,up);
 
-        aux_scalar = 1.0/Vector3::distance(u,Vector3());
+        aux_scalar = 1/Vector3::distance(u,Vector3());
 
         u.set(u.x*aux_scalar,u.y*aux_scalar,u.z*aux_scalar);
 
-        Vector3 v = Vector3::cross(u,w);
-        /*
-         Matrix4 mat = Matrix4(
-            u.x,v.x,w.x,eye.x,
-            u.y,v.y,w.y,eye.y,
-            u.z,v.z,w.z,eye.z,
-            0,0,0,1
-        );
-        */
+        Vector3 v = Vector3::cross(w,u);
+
+        Vector3 negative_eye = Vector3::subtract(Vector3(),eye);
+
         Matrix4 mat = Matrix4(
-            u.x,u.y,u.z,0.0,
-            v.x,v.y,v.z,0.0,
-            w.x,w.y,w.z,0.0,
-            eye.x,eye.y,eye.z,1.0
+            u.x,u.y,u.z,Vector3::dot(negative_eye,u),
+            v.x,v.y,v.z,Vector3::dot(negative_eye,v),
+            w.x,w.y,w.z,Vector3::dot(negative_eye,w),
+            0.0,0.0,0.0,1.0
         );
 
         //mat = mat.invert();
@@ -1240,6 +1235,29 @@ public:
     }
 
     /**
+     * @brief Genera una matriz de proyección de perspectiva utilizando un frustum.
+     * 
+     * @param left Límite izquierdo del frustum.
+     * @param right Límite derecho del frustum.
+     * @param bottom Límite inferior del frustum.
+     * @param top Límite superior del frustum.
+     * @param near Distancia del plano cercano.
+     * @param far Distancia del plano lejano.
+     * @return Matrix4 Matriz 4x4 que define el frustum.
+     */
+    static Matrix4 frustum(double left, double right, double bottom, double top, double near, double far) {
+        
+        Matrix4 mat = Matrix4(
+            (2.0*near)/(right-left),0.0,0.0,(left+right)/(left-right),
+            0.0,(2.0*near)/(top-bottom), 0.0,-(bottom+top)/(top-bottom),
+            0.0,0.0,-(far+near)/(far-near),-(2.0*far*near)/(far-near),
+            0.0,0.0,-1.0,0
+        );
+
+        return mat;
+    }
+
+    /**
      * @brief Genera una matriz de proyección de perspectiva utilizando un campo de visión.
      * 
      * @param fovy Campo de visión en el eje vertical, en grados.
@@ -1251,9 +1269,9 @@ public:
     static Matrix4 perspective(double fovy,double aspect, double near, double far) {
             
         Matrix4 mat = Matrix4(
-            1.0/aspect*tan((fovy/2.0)*(M_PI/180.0)),0.0,0.0,0.0,
-            0.0,1.0/tan((fovy/2.0)*(M_PI/180.0)),0.0,0.0,
-            0.0,0.0,(far+near)/far-near,(2.0)*far*near/far+near,
+            1.0/(aspect*tan((fovy/2.0)*(M_PI/180.0))),0.0,0.0,0.0,
+            0.0,1.0/(tan((fovy/2.0)*(M_PI/180.0))),0.0,0.0,
+            0.0,0.0,-((far+near)/(far-near)),(-2.0*far*near)/(far-near),
             0.0,0.0,-1.0,0.0
         );
 

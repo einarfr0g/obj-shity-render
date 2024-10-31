@@ -246,9 +246,35 @@ vector<double> get_model_cage(vector<Vector4> points){
     return cage;
 }
 
-void paint_vector(Vector4 vec, sf::RenderWindow window){
-    put_pixxel(vec.x,vec.y,window);
+void paint_vector(Vector4 vec, sf::RenderWindow &window){
+    put_pixxel(vec.x/vec.w,vec.y/vec.w,window);
 }
+
+void bresenham_vectors(Vector4 vec1,Vector4 vec2,sf::RenderWindow &window){
+    draw_line(vec1.x/vec1.w,vec1.y/vec1.w,vec2.x/vec2.w,vec2.y/vec2.w,window);
+}
+
+void draw_model_triangles(pair<vector<Vector4>,vector<Vector4>> model,sf::RenderWindow &window){
+    int index1,index2,index3,index4;
+
+    for(Vector4 indexes:model.second){
+        index1 = (int) indexes.x;
+        index2 = (int) indexes.y;
+        index3 = (int) indexes.z;
+        index4 = (int) indexes.w;
+
+        bresenham_vectors(model.first[index1-1],model.first[index2-1],window);
+        bresenham_vectors(model.first[index2-1],model.first[index3-1],window);
+        if(indexes.w = -1){
+            bresenham_vectors(model.first[index3-1],model.first[index1-1],window);
+        }else{
+            bresenham_vectors(model.first[index3-1],model.first[index4-1],window);
+            bresenham_vectors(model.first[index4-1],model.first[index1-1],window);
+        }
+    }
+}
+
+
 
 
 int main()
@@ -257,7 +283,7 @@ int main()
     int height = 720;
     int wide = 720;
 
-    string name_document = "bunny.obj";
+    string name_document = "Happy_Buddha.obj";
 
     pair<vector<Vector4>,vector<Vector4>> model = obj_vectores_y_triangulos(name_document);
 
@@ -265,9 +291,9 @@ int main()
 
     Vector3 center = Vector3((model_cage[0]+model_cage[1])/2.0,(model_cage[2]+model_cage[3])/2.0,(model_cage[4]+model_cage[5])/2.0);
 
-    Vector3 camera = Vector3(10.0,30.0,10.0);
+    Vector3 camera = Vector3(model_cage[1],model_cage[3],model_cage[5]);
 
-    Vector3 min = Vector3(model_cage[0],model_cage[2],model_cage[4]);
+    Vector3 min = Vector3(model_cage[0]*1.5,model_cage[2]*1.5,model_cage[4]*1.5);
 
     double model_distance = Vector3::distance(Vector3::subtract(camera,min),Vector3()) * 1.5;
 
@@ -282,7 +308,7 @@ int main()
         sf::Event event;
         while (window.pollEvent(event)){
             if(event.type == sf::Event::EventType::MouseButtonPressed){
-                camera = Vector3(camera.x-1.0,camera.y-1.0,camera.z-1.0);
+                camera = Vector3(camera.x,camera.y+1.0,camera.z);
             }
 
             if (event.type == sf::Event::Closed)
@@ -291,7 +317,7 @@ int main()
 
         Matrix4 look_at = Matrix4::lookAt(camera,center,Vector3(0.0,0.0,1.0));
 
-        Matrix4 perspective = Matrix4::perspective(90.0,1.0,0.1,100.0);
+        Matrix4 perspective = Matrix4::perspective(90,1,0.1,100);
 
         Matrix4 view_port = Matrix4::viewPort(720,720);
 
@@ -299,14 +325,24 @@ int main()
 
         window.clear();
 
-        //Matrix4 RotationMatrix = Matrix4::rotateZ(theta);
+        Matrix4 RotationMatrix = Matrix4::rotateZ(theta);
 
-        //vector<Vector4> transformed_points = aply_matrix(model.first,RotationMatrix);
+        vector<Vector4> transformed_points = aply_matrix(model.first,RotationMatrix);
 
-        vector<Vector4> transformed_points2 = aply_matrix(model.first,final_Matrix);
+        vector<Vector4> transformed_points2 = aply_matrix(transformed_points,final_Matrix);
+
+        pair<vector<Vector4>,vector<Vector4>> model_transformed;
+
+        model_transformed.first = transformed_points2;
+
+        model_transformed.second = model.second;
+
+        //draw_model_triangles(model_transformed,window);
+
+        
 
         for(Vector4 point : transformed_points2){
-            put_pixxel(point.x,point.y,window);
+            paint_vector(point,window);
         }
 
         theta = theta + 0.1;
