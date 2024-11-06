@@ -286,7 +286,7 @@ void draw_model_triangles(pair<vector<Vector4>,vector<Vector4>> model,sf::Render
 
         bresenham_vectors(model.first[index1-1],model.first[index2-1],window);
         bresenham_vectors(model.first[index2-1],model.first[index3-1],window);
-        if(index4 = -1){
+        if(index4 == -1){
             bresenham_vectors(model.first[index3-1],model.first[index1-1],window);
         }else{
             bresenham_vectors(model.first[index3-1],model.first[index4-1],window);
