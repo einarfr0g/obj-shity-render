@@ -113,7 +113,7 @@ pair<vector<Vector4>,vector<Vector4>> obj_vectores_y_triangulos(string name_docu
 
             }
 
-            cout<<"mal"<<"\n";
+            //cout<<"mal"<<"\n";
 
             //w
 
@@ -251,7 +251,28 @@ void paint_vector(Vector4 vec, sf::RenderWindow &window){
 }
 
 void bresenham_vectors(Vector4 vec1,Vector4 vec2,sf::RenderWindow &window){
-    draw_line(vec1.x/vec1.w,vec1.y/vec1.w,vec2.x/vec2.w,vec2.y/vec2.w,window);
+    double x0,y0,x1,y1;
+
+    if(vec1.w == 0 ){
+        return ;
+    }
+
+    if(vec2.w == 0 ){
+        return ;
+    }
+
+    x0 = vec1.x/vec1.w;
+
+    y0 = vec1.y/vec1.w;
+
+    x1 = vec2.x/vec2.w;
+
+    y1 = vec2.y/vec2.w;
+
+
+
+    draw_line(x0,y0,x1,y1,window);
+    //window.display();
 }
 
 void draw_model_triangles(pair<vector<Vector4>,vector<Vector4>> model,sf::RenderWindow &window){
@@ -265,7 +286,7 @@ void draw_model_triangles(pair<vector<Vector4>,vector<Vector4>> model,sf::Render
 
         bresenham_vectors(model.first[index1-1],model.first[index2-1],window);
         bresenham_vectors(model.first[index2-1],model.first[index3-1],window);
-        if(indexes.w = -1){
+        if(index4 = -1){
             bresenham_vectors(model.first[index3-1],model.first[index1-1],window);
         }else{
             bresenham_vectors(model.first[index3-1],model.first[index4-1],window);
@@ -283,9 +304,23 @@ int main()
     int height = 720;
     int wide = 720;
 
-    string name_document = "Happy_Buddha.obj";
+    std::cout<<"Introduzca el nombre del .obj que desea abrir"<<"\n";
+
+    string name_document = "";
+
+    std::cin>>name_document;
 
     pair<vector<Vector4>,vector<Vector4>> model = obj_vectores_y_triangulos(name_document);
+
+    std::cout<<"elija una de las sigientes opciones"<<"\n";
+
+    std::cout<<"0- dibujar nube de puntos"<<"\n";
+
+    std::cout<<"1- dibujar triángulos"<<"\n";
+
+    bool triangles;
+
+    std::cin>>triangles;
 
     vector<double> model_cage = get_model_cage(model.first);
 
@@ -325,7 +360,7 @@ int main()
 
         window.clear();
 
-        Matrix4 RotationMatrix = Matrix4::rotateZ(theta);
+        Matrix4 RotationMatrix = Matrix4::rotateY(theta);
 
         vector<Vector4> transformed_points = aply_matrix(model.first,RotationMatrix);
 
@@ -337,12 +372,12 @@ int main()
 
         model_transformed.second = model.second;
 
-        //draw_model_triangles(model_transformed,window);
-
-        
-
-        for(Vector4 point : transformed_points2){
-            paint_vector(point,window);
+        if(triangles){
+            draw_model_triangles(model_transformed,window);    
+        }else{
+            for(Vector4 point : transformed_points2){
+                paint_vector(point,window);
+            }
         }
 
         theta = theta + 0.1;
